@@ -89,7 +89,7 @@ int main() {
         RES.threadpool,
         &RES.file_asset_server,
         &RES.sprite_store,
-        HERO_XXX
+        HERO_SAMURAI // HERO_SAMURAI // HERO_XXX
     );
 
     RES.edit_scene_ui = INIT_create_edit_scene_ui(RES.screen_size, &RES.global_ui_store);

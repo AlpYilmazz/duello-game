@@ -97,7 +97,7 @@ Rectangle get_current_frame_source(PlayerStateCollection* ps_collection) {
 
 void info_log_player_state_collection(PlayerStateCollection* psc) {
     JUST_LOG_INFO("-- Player State Collection --\n");
-    JUST_LOG_INFO("sprite_size: %0.0f %0.0f\n", psc->sprite_size.height, psc->sprite_size.width);
+    JUST_LOG_INFO("sprite_size: %d %d\n", (uint32)psc->sprite_size.width, (uint32)psc->sprite_size.height);
     JUST_LOG_INFO("state_count: %d\n", psc->state_count);
     JUST_LOG_INFO("active_state: %d\n", psc->active_state);
     for (uint32 state_i = 0; state_i < psc->state_count; state_i++) {
@@ -148,7 +148,7 @@ Player spawn_player(
     SpriteTransform transform = {
         .anchor = make_anchor(Anchor_Bottom_Mid),
         .position = { 0, 0 },
-        .size = { 160, 320 },
+        .size = { 93*4, 112*4 }, // TODO: definitally handle size based on sprite
         .rotation = 0,
         .rway = Rotation_CCW,
     };
@@ -652,13 +652,13 @@ PlayerStateCollection load_hero(
     PlayerStateCollection psc = {0};
 
     fscanf(player_serial_file, "%d\n", &psc.state_count);
-    fscanf(player_serial_file, "%f %f\n", &psc.sprite_size.height, &psc.sprite_size.width);
+    fscanf(player_serial_file, "%f %f\n", &psc.sprite_size.width, &psc.sprite_size.height);
 
     for (uint32 state_i = 0; state_i < psc.state_count; state_i++) {
         PlayerState* ps = &psc.states[state_i];
 
-        char* state_name = malloc(20 * sizeof(char));
-        char state_asset_path[30];
+        char* state_name = malloc(50 * sizeof(char));
+        char state_asset_path[100];
         fscanf(player_serial_file, "%s\n", state_name);
         fscanf(player_serial_file, "%s\n", state_asset_path);
         fscanf(player_serial_file, "%d\n", &ps->frame_count);
@@ -733,7 +733,7 @@ void save_hero(
     sprintf(state_asset_path, "%s/%s_%s", heroes_asset_dir, asset_file_prefix, hero_name);
 
     fprintf(player_serial_file, "%d\n", psc->state_count);
-    fprintf(player_serial_file, "%d %d\n", psc->sprite_size.height, psc->sprite_size.width);
+    fprintf(player_serial_file, "%d %d\n", psc->sprite_size.width, psc->sprite_size.height);
 
     for (uint32 state_i = 0; state_i < psc->state_count; state_i++) {
         PlayerState* ps = &psc->states[state_i];
