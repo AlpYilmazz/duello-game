@@ -261,7 +261,7 @@ EditSceneUI INIT_create_edit_scene_ui(
             //
             .is_bordered = true,
             .border_thick = 2,
-            .border_color = {0, 255, 0, 255},
+            .border_color = {0, 0, 255, 255},
             //
             .title_font = GetFontDefault(),
             .title_font_size = 15,
@@ -282,11 +282,11 @@ EditSceneUI INIT_create_edit_scene_ui(
             .disabled = false,
         },
         .style = {
-            .idle_color = {230, 41, 55, 100},
-            .hovered_color = {230, 41, 55, 255},
+            .idle_color = {230, 41, 55, 50},
+            .hovered_color = {230, 41, 55, 150},
             .is_bordered = true,
             .border_thick = 2,
-            .border_color = {255, 0, 0, 255},
+            .border_color = {255, 0, 0, 150},
         },
     };
 
