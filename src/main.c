@@ -3,6 +3,7 @@
 
 #include "justengine.h"
 
+#include "ui_extend.h"
 #include "player.h"
 
 typedef struct {
@@ -52,6 +53,7 @@ RenderResources RENDER_RES = {
 };
 
 int main() {
+    ui_extention_register_ui_vtable();
 
     SET_LOG_LEVEL(LOG_LEVEL_INFO);
 
@@ -119,6 +121,7 @@ int main() {
         JUST_LOG_TRACE("UPDATE start\n");
 
         SYSTEM_UPDATE_handle_edit_scene_ui(
+            &RES.file_asset_server,
             &RES.global_ui_store,
             &RES.edit_scene_ui,
             &RES.player_edit,

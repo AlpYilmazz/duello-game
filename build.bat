@@ -19,6 +19,7 @@ set TARGET_DIR=target
 
 set OUTPUT=find-the-lilu.exe
 set COMPILE=^
+    %SRC_DIR%/ui_extend.c^
     %SRC_DIR%/player.c^
     %SRC_DIR%/main.c
 

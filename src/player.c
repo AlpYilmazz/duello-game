@@ -4,6 +4,8 @@
 
 #include "justengine.h"
 
+#include "ui_extend.h"
+
 #include "player.h"
 
 // HitColliderSet
@@ -143,7 +145,7 @@ Player spawn_player(
         hero
     );
     set_player_state_by_name(&player_state_collection, "idle");
-    info_log_player_state_collection(&player_state_collection);
+    // info_log_player_state_collection(&player_state_collection);
 
     SpriteTransform transform = {
         .anchor = make_anchor(Anchor_Bottom_Mid),
@@ -290,22 +292,39 @@ EditSceneUI INIT_create_edit_scene_ui(
         },
     };
 
+    BinaryBox test_select_box = {
+        .elem = {
+            .id = 0,
+            .type = CustomUIElementType_BinaryBox,
+            .state = {0},
+            .anchor = make_anchor(Anchor_Bottom_Mid),
+            .position = {RES_screen_size.width/2.0, (float32)RES_screen_size.height - 150.0 - 50/2.0},
+            .size = {100, 100},
+            .disabled = false,
+        },
+        .selected = false,
+    };
+
     UIElementId new_hitbox_button_id = put_ui_element_button(RES_ui_store, new_hitbox_button);
     UIElementId new_hurtbox_button_id = put_ui_element_button(RES_ui_store, new_hurtbox_button);
     UIElementId delete_bin_area_id = put_ui_element_area(RES_ui_store, delete_bin_area);
     UIElementId save_button_id = put_ui_element_button(RES_ui_store, save_button);
+
+    UIElementId test_select_box_id = put_ui_element_binary_box(RES_ui_store, test_select_box);
 
     EditSceneUI ui = {
         .new_hitbox_button = new_hitbox_button_id,
         .new_hurtbox_button = new_hurtbox_button_id,
         .delete_bin_area = delete_bin_area_id,
         .save_button = save_button_id,
+        .test_select_box = test_select_box_id,
     };
 
     return ui;
 }
 
 void SYSTEM_UPDATE_handle_edit_scene_ui(
+    FileAssetServer* RES_file_asset_server,
     UIElementStore* RES_ui_store,
     EditSceneUI* edit_scene_ui,
     PlayerEdit* player_edit,
@@ -329,6 +348,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
                 }
             }
         }
+        save_hero(RES_file_asset_server, psc, player_edit->player.hero);
 
         JUST_LOG_INFO("===========\n");
         JUST_LOG_INFO("== SAVED ==\n");
@@ -648,6 +668,28 @@ PlayerStateCollection load_hero(
     char* hero_filepath = hero_file_path(RES_file_asset_server, hero);
     FILE* player_serial_file = fopen(hero_filepath, "r");
     free(hero_filepath);
+
+    const char const* heroes_asset_dir = heroes_asset_directory_static();
+    const char const* hero_name = hero_name_static(hero);
+
+    const char const* asset_file_prefix = "hero";
+    uint32 prefix_len = 
+        strlen(heroes_asset_dir)
+        + 1                             // '/'
+        + strlen(hero_name)
+        + 1                             // '/'
+        + strlen(asset_file_prefix)
+        + 1                             // '_'
+        + strlen(hero_name)
+        + 1;                            // '_'
+    uint32 path_static_part_len =
+        prefix_len
+        + 4                             // ".png"
+        + 1;                            // '\0'
+
+    char* state_asset_path = malloc(2*path_static_part_len * sizeof(char));
+    char* state_asset_path_cursor = state_asset_path + prefix_len;
+    sprintf(state_asset_path, "%s/%s/%s_%s_", heroes_asset_dir, hero_name, asset_file_prefix, hero_name);
     
     PlayerStateCollection psc = {0};
 
@@ -658,12 +700,14 @@ PlayerStateCollection load_hero(
         PlayerState* ps = &psc.states[state_i];
 
         char* state_name = malloc(50 * sizeof(char));
-        char state_asset_path[100];
+        // char state_asset_path[100];
         fscanf(player_serial_file, "%s\n", state_name);
-        fscanf(player_serial_file, "%s\n", state_asset_path);
+        // fscanf(player_serial_file, "%s\n", state_asset_path);
         fscanf(player_serial_file, "%d\n", &ps->frame_count);
 
         psc.state_names[state_i] = state_name;
+        uint32 path_len = path_static_part_len + strlen(state_name);
+        sprintf(state_asset_path_cursor, "%s.png", state_name);
 
         ps->anim_sheet = just_engine_asyncio_file_load_image(
             RES_threadpool,
@@ -697,6 +741,8 @@ PlayerStateCollection load_hero(
             }
         }
     }
+    
+    free(state_asset_path);
 
     return psc;
 }
@@ -710,41 +756,41 @@ void save_hero(
     FILE* player_serial_file = fopen(hero_filepath, "w");
     free(hero_filepath);
 
-    const char const* heroes_asset_dir = heroes_asset_directory_static();
-    const char const* hero_name = hero_name_static(hero);
+    // const char const* heroes_asset_dir = heroes_asset_directory_static();
+    // const char const* hero_name = hero_name_static(hero);
 
-    const char const* asset_file_prefix = "hero";
-    uint32 prefix_len = 
-        strlen(heroes_asset_dir)
-        + 1                             // '/'
-        + strlen(hero_name)
-        + 1                             // '/'
-        + strlen(asset_file_prefix)
-        + 1                             // '_'
-        + strlen(hero_name)
-        + 1;                            // '_'
-    uint32 path_static_part_len =
-        prefix_len
-        + 4                             // ".png"
-        + 1;                            // '\0'
+    // const char const* asset_file_prefix = "hero";
+    // uint32 prefix_len = 
+    //     strlen(heroes_asset_dir)
+    //     + 1                             // '/'
+    //     + strlen(hero_name)
+    //     + 1                             // '/'
+    //     + strlen(asset_file_prefix)
+    //     + 1                             // '_'
+    //     + strlen(hero_name)
+    //     + 1;                            // '_'
+    // uint32 path_static_part_len =
+    //     prefix_len
+    //     + 4                             // ".png"
+    //     + 1;                            // '\0'
 
-    char* state_asset_path = malloc(2*path_static_part_len * sizeof(char));
-    char* state_asset_path_cursor = state_asset_path + prefix_len;
-    sprintf(state_asset_path, "%s/%s_%s", heroes_asset_dir, asset_file_prefix, hero_name);
+    // char* state_asset_path = malloc(2*path_static_part_len * sizeof(char));
+    // char* state_asset_path_cursor = state_asset_path + prefix_len;
+    // sprintf(state_asset_path, "%s/%s_%s", heroes_asset_dir, asset_file_prefix, hero_name);
 
     fprintf(player_serial_file, "%d\n", psc->state_count);
-    fprintf(player_serial_file, "%d %d\n", psc->sprite_size.width, psc->sprite_size.height);
+    fprintf(player_serial_file, "%d %d\n", (uint32)psc->sprite_size.width, (uint32)psc->sprite_size.height);
 
     for (uint32 state_i = 0; state_i < psc->state_count; state_i++) {
         PlayerState* ps = &psc->states[state_i];
 
         char* state_name = psc->state_names[state_i];
 
-        uint32 path_len = path_static_part_len + strlen(state_name);
-        sprintf(state_asset_path_cursor, "%s.png", state_name);
+        // uint32 path_len = path_static_part_len + strlen(state_name);
+        // sprintf(state_asset_path_cursor, "%s.png", state_name);
 
         fprintf(player_serial_file, "%s\n", state_name);
-        fprintf(player_serial_file, "%s\n", state_asset_path);
+        // fprintf(player_serial_file, "%s\n", state_asset_path);
         fprintf(player_serial_file, "%d\n", ps->frame_count);
 
         for (uint32 frame_i = 0; frame_i < ps->frame_count; frame_i++) {
@@ -767,5 +813,5 @@ void save_hero(
         }
     }
 
-    free(state_asset_path);
+    // free(state_asset_path);
 }

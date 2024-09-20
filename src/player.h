@@ -98,6 +98,7 @@ typedef struct {
     UIElementId new_hurtbox_button;
     UIElementId delete_bin_area;
     UIElementId save_button;
+    UIElementId test_select_box;
 } EditSceneUI;
 
 EditSceneUI INIT_create_edit_scene_ui(
@@ -106,6 +107,7 @@ EditSceneUI INIT_create_edit_scene_ui(
 );
 
 void SYSTEM_UPDATE_handle_edit_scene_ui(
+    FileAssetServer* RES_file_asset_server,
     UIElementStore* RES_ui_store,
     EditSceneUI* edit_scene_ui,
     PlayerEdit* player_edit,
