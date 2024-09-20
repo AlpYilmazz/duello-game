@@ -7,7 +7,7 @@ set CC=gcc
 
 set COMPILER_FLAGS=-std=c11
 
-set INCLUDE=-I%LIB_COMMON_DIR%/justengine/include
+set INCLUDE=-I%LIB_COMMON_DIR%/justengine/include -Isrc
 set LIB=-L%LIB_COMMON_DIR%/justengine/lib
 
 set LINK=^
@@ -20,7 +20,8 @@ set TARGET_DIR=target
 set OUTPUT=find-the-lilu.exe
 set COMPILE=^
     %SRC_DIR%/ui_extend.c^
-    %SRC_DIR%/player.c^
+    %SRC_DIR%/player/player.c^
+    %SRC_DIR%/player/player_edit_chapter.c^
     %SRC_DIR%/main.c
 
 mkdir %TARGET_DIR%

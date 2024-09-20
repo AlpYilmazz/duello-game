@@ -150,7 +150,9 @@ Player spawn_player(
     SpriteTransform transform = {
         .anchor = make_anchor(Anchor_Bottom_Mid),
         .position = { 0, 0 },
-        .size = { 93*4, 112*4 }, // TODO: definitally handle size based on sprite
+        .use_source_size = true,
+        // .size = { 93*4, 112*4 }, // TODO: definitally handle size based on sprite
+        .scale = {4, 4},
         .rotation = 0,
         .rway = Rotation_CCW,
     };
@@ -203,7 +205,7 @@ EditSceneUI INIT_create_edit_scene_ui(
             .idle_color = RED,
             .hovered_color = MAROON,
             .pressed_color = YELLOW,
-            .disabled_color = DARKGRAY,
+            .disabled_color = BLACK,
             //
             .is_bordered = true,
             .border_thick = 2,
@@ -231,7 +233,7 @@ EditSceneUI INIT_create_edit_scene_ui(
             .idle_color = GREEN,
             .hovered_color = LIME,
             .pressed_color = YELLOW,
-            .disabled_color = DARKGRAY,
+            .disabled_color = BLACK,
             //
             .is_bordered = true,
             .border_thick = 2,
@@ -259,7 +261,7 @@ EditSceneUI INIT_create_edit_scene_ui(
             .idle_color = BLUE,
             .hovered_color = DARKBLUE,
             .pressed_color = YELLOW,
-            .disabled_color = DARKGRAY,
+            .disabled_color = BLACK,
             //
             .is_bordered = true,
             .border_thick = 2,
@@ -307,16 +309,16 @@ EditSceneUI INIT_create_edit_scene_ui(
             .unselected_color = RED,
             .disabled_color = DARKGRAY,
             //
-            .is_bordered = true,
-            .border_thick = 2,
-            .border_color = {0, 0, 255, 255},
+            .is_bordered = false,
+            // .border_thick = 2,
+            // .border_color = {0, 0, 255, 255},
             //
             .title_font = GetFontDefault(),
             .title_font_size = 15,
             .title_spacing = 2,
             .title_color = WHITE,
         },
-        .title = "selection_box",
+        .title = "PLAY",
         .selected = false,
     };
 
@@ -333,11 +335,16 @@ EditSceneUI INIT_create_edit_scene_ui(
         .style = {
             .line_color = { 100, 100, 100, 50 },
             .cursor_color = YELLOW,
+            //
+            .title_font = GetFontDefault(),
+            .title_font_size = 15,
+            .title_spacing = 2,
+            .title_color = WHITE,
         },
-        .title = "slider",
-        .low_value = 1.0,
-        .high_value = 10.0,
-        .cursor = 0.0,
+        .title = "UPDATE RATE",
+        .low_value = 0.0,
+        .high_value = 1.0,
+        .cursor = 0.5,
     };
 
     UIElementId new_hitbox_button_id = put_ui_element_button(RES_ui_store, new_hitbox_button);
@@ -372,16 +379,24 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
     Area* delete_bin_area = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->delete_bin_area);
     Button* save_button = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->save_button);
 
+    SelectionBox* test_selection_box = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->test_selection_box);
     Slider* test_slider = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->test_slider);
 
     PlayerStateCollection* psc = &player_edit->player.state_collection;
     PlayerState* player_state = get_active_player_state(psc);
 
-    if (test_slider->elem.state.pressed) {
-        JUST_LOG_INFO("Slider value: %0.2f\n", get_slider_value(test_slider));
+    player_edit->player.paused = !test_selection_box->selected;
+
+    new_hitbox_button->elem.disabled = !player_edit->player.paused;
+    new_hurtbox_button->elem.disabled = !player_edit->player.paused;
+
+    if (!test_slider->elem.disabled && test_slider->elem.state.pressed) {
+        float32 slider_value = get_slider_value(test_slider);
+        JUST_LOG_INFO("Slider value: %0.2f\n", slider_value);
+        player_edit->player.update_timer.time_setup = slider_value;
     }
 
-    if (save_button->elem.state.just_clicked) {
+    if (!save_button->elem.disabled && save_button->elem.state.just_clicked) {
         for (uint32 state_i = 0; state_i < psc->state_count; state_i++) {
             PlayerState* ps = &psc->states[state_i];
             for (uint32 frame_i = 0; frame_i < ps->frame_count; frame_i++) {
@@ -400,7 +415,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
         JUST_LOG_INFO("===========\n");
     }
 
-    if (new_hitbox_button->elem.state.just_clicked) {
+    if (!new_hitbox_button->elem.disabled && new_hitbox_button->elem.state.just_clicked) {
         AABBCollider box = {
             .x_left = -50,
             .x_right = 50,
@@ -411,7 +426,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
         hcs->colliders[hcs->count] = box;
         hcs->count++;
     }
-    if (new_hurtbox_button->elem.state.just_clicked) {
+    if (!new_hurtbox_button->elem.disabled && new_hurtbox_button->elem.state.just_clicked) {
         AABBCollider box = {
             .x_left = -50,
             .x_right = 50,
@@ -423,7 +438,8 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
         hcs->count++;
     }
 
-    if (player_edit->editing
+    if (!delete_bin_area->elem.disabled
+        && player_edit->editing
         && player_edit->edit_type == ColliderEditType_Move
         && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)
         && delete_bin_area->elem.state.hover
@@ -439,6 +455,10 @@ void SYSTEM_UPDATE_move_hitbox(
     PlayerEdit* player_edit,
     Camera2D* primary_camera
 ) {
+    if (!player_edit->player.paused) {
+        return;
+    }
+
     Player* player = &player_edit->player;
     PlayerState* player_state = get_active_player_state(&player->state_collection);
 
@@ -592,7 +612,7 @@ void SYSTEM_UPDATE_update_player(
 
     // Animation Pause/Unpause
     if (IsKeyPressed(KEY_SPACE)) {
-        player->paused ^= 1;
+        // player->paused ^= 1;
     }
 
     // Set State
@@ -673,8 +693,8 @@ const char const* hero_name_static(HERO hero) {
         return "SAMURAI";
     case HERO_KNIGHT:
         return "KNIGHT";
-    default:
     case HERO_XXX:
+    default:
         return "XXX";
     }
 }
