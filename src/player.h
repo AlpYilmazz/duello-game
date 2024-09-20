@@ -98,7 +98,8 @@ typedef struct {
     UIElementId new_hurtbox_button;
     UIElementId delete_bin_area;
     UIElementId save_button;
-    UIElementId test_select_box;
+    UIElementId test_selection_box;
+    UIElementId test_slider;
 } EditSceneUI;
 
 EditSceneUI INIT_create_edit_scene_ui(

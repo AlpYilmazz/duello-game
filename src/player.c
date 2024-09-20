@@ -292,17 +292,52 @@ EditSceneUI INIT_create_edit_scene_ui(
         },
     };
 
-    BinaryBox test_select_box = {
+    SelectionBox test_selection_box = {
         .elem = {
             .id = 0,
-            .type = CustomUIElementType_BinaryBox,
+            .type = UIElementType_SelectionBox,
             .state = {0},
             .anchor = make_anchor(Anchor_Bottom_Mid),
             .position = {RES_screen_size.width/2.0, (float32)RES_screen_size.height - 150.0 - 50/2.0},
             .size = {100, 100},
             .disabled = false,
         },
+        .style = {
+            .selected_color = GREEN,
+            .unselected_color = RED,
+            .disabled_color = DARKGRAY,
+            //
+            .is_bordered = true,
+            .border_thick = 2,
+            .border_color = {0, 0, 255, 255},
+            //
+            .title_font = GetFontDefault(),
+            .title_font_size = 15,
+            .title_spacing = 2,
+            .title_color = WHITE,
+        },
+        .title = "selection_box",
         .selected = false,
+    };
+
+    Slider test_slider = {
+        .elem = {
+            .id = 0,
+            .type = UIElementType_Slider,
+            .state = {0},
+            .anchor = make_anchor(Anchor_Bottom_Mid),
+            .position = {RES_screen_size.width/2.0, (float32)RES_screen_size.height - 30 - 100/2.0},
+            .size = {500, 20},
+            .disabled = false,
+        },
+        .style = {
+            .line_color = { 100, 100, 100, 50 },
+            .cursor_color = YELLOW,
+        },
+        .title = "slider",
+        .low_value = 1.0,
+        .high_value = 10.0,
+        .cursor = 0.0,
     };
 
     UIElementId new_hitbox_button_id = put_ui_element_button(RES_ui_store, new_hitbox_button);
@@ -310,14 +345,16 @@ EditSceneUI INIT_create_edit_scene_ui(
     UIElementId delete_bin_area_id = put_ui_element_area(RES_ui_store, delete_bin_area);
     UIElementId save_button_id = put_ui_element_button(RES_ui_store, save_button);
 
-    UIElementId test_select_box_id = put_ui_element_binary_box(RES_ui_store, test_select_box);
+    UIElementId test_selection_box_id = put_ui_element_selection_box(RES_ui_store, test_selection_box);
+    UIElementId test_slider_id = put_ui_element_slider(RES_ui_store, test_slider);
 
     EditSceneUI ui = {
         .new_hitbox_button = new_hitbox_button_id,
         .new_hurtbox_button = new_hurtbox_button_id,
         .delete_bin_area = delete_bin_area_id,
         .save_button = save_button_id,
-        .test_select_box = test_select_box_id,
+        .test_selection_box = test_selection_box_id,
+        .test_slider = test_slider_id,
     };
 
     return ui;
@@ -335,8 +372,14 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
     Area* delete_bin_area = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->delete_bin_area);
     Button* save_button = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->save_button);
 
+    Slider* test_slider = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->test_slider);
+
     PlayerStateCollection* psc = &player_edit->player.state_collection;
     PlayerState* player_state = get_active_player_state(psc);
+
+    if (test_slider->elem.state.pressed) {
+        JUST_LOG_INFO("Slider value: %0.2f\n", get_slider_value(test_slider));
+    }
 
     if (save_button->elem.state.just_clicked) {
         for (uint32 state_i = 0; state_i < psc->state_count; state_i++) {
@@ -405,7 +448,7 @@ void SYSTEM_UPDATE_move_hitbox(
     Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), *primary_camera);
     Vector2 relative_mouse = Vector2Subtract(mouse, player_position);
 
-    const float32 MARGIN = 10;
+    const float32 MARGIN = 4;
     if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
         for (uint32 collider_type_i = 0; collider_type_i < PLAYER_COLLIDER_TYPE_COUNT; collider_type_i++) {
 
@@ -570,7 +613,7 @@ void SYSTEM_RENDER_hitbox(
 
     SpriteTransform* player_transform = &RES_sprite_store->transforms[player->sprite_component.id];
 
-    const float32 BORDER_THICK = 5;
+    const float32 BORDER_THICK = 2;
 
     Color box_colors[PLAYER_COLLIDER_TYPE_COUNT] = {0};
     box_colors[HITBOX] = RED;
@@ -581,7 +624,7 @@ void SYSTEM_RENDER_hitbox(
         Color box_color = box_colors[i_set];
         Color box_border_color = box_color;
 
-        box_color.a = 50;
+        box_color.a = 20;
         box_border_color.a = 100;
 
         for (uint32 i = 0; i < collider_set->count; i++) {
@@ -700,9 +743,7 @@ PlayerStateCollection load_hero(
         PlayerState* ps = &psc.states[state_i];
 
         char* state_name = malloc(50 * sizeof(char));
-        // char state_asset_path[100];
         fscanf(player_serial_file, "%s\n", state_name);
-        // fscanf(player_serial_file, "%s\n", state_asset_path);
         fscanf(player_serial_file, "%d\n", &ps->frame_count);
 
         psc.state_names[state_i] = state_name;
@@ -756,28 +797,6 @@ void save_hero(
     FILE* player_serial_file = fopen(hero_filepath, "w");
     free(hero_filepath);
 
-    // const char const* heroes_asset_dir = heroes_asset_directory_static();
-    // const char const* hero_name = hero_name_static(hero);
-
-    // const char const* asset_file_prefix = "hero";
-    // uint32 prefix_len = 
-    //     strlen(heroes_asset_dir)
-    //     + 1                             // '/'
-    //     + strlen(hero_name)
-    //     + 1                             // '/'
-    //     + strlen(asset_file_prefix)
-    //     + 1                             // '_'
-    //     + strlen(hero_name)
-    //     + 1;                            // '_'
-    // uint32 path_static_part_len =
-    //     prefix_len
-    //     + 4                             // ".png"
-    //     + 1;                            // '\0'
-
-    // char* state_asset_path = malloc(2*path_static_part_len * sizeof(char));
-    // char* state_asset_path_cursor = state_asset_path + prefix_len;
-    // sprintf(state_asset_path, "%s/%s_%s", heroes_asset_dir, asset_file_prefix, hero_name);
-
     fprintf(player_serial_file, "%d\n", psc->state_count);
     fprintf(player_serial_file, "%d %d\n", (uint32)psc->sprite_size.width, (uint32)psc->sprite_size.height);
 
@@ -786,11 +805,7 @@ void save_hero(
 
         char* state_name = psc->state_names[state_i];
 
-        // uint32 path_len = path_static_part_len + strlen(state_name);
-        // sprintf(state_asset_path_cursor, "%s.png", state_name);
-
         fprintf(player_serial_file, "%s\n", state_name);
-        // fprintf(player_serial_file, "%s\n", state_asset_path);
         fprintf(player_serial_file, "%d\n", ps->frame_count);
 
         for (uint32 frame_i = 0; frame_i < ps->frame_count; frame_i++) {
@@ -812,6 +827,4 @@ void save_hero(
             }
         }
     }
-
-    // free(state_asset_path);
 }

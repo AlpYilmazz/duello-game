@@ -52,6 +52,16 @@ RenderResources RENDER_RES = {
     .render_sprites = STRUCT_ZERO_INIT,
 };
 
+void RES_cleanup() {
+    free_bump_allocator(&RES.temporary_storage);
+    thread_pool_shutdown(RES.threadpool, THREADPOOL_IMMEDIATE_SHUTDOWN);
+    ui_element_store_drop(&RES.global_ui_store);
+}
+
+void RENDER_RES_cleanup() {
+
+}
+
 int main() {
     ui_extention_register_ui_vtable();
 
@@ -119,6 +129,11 @@ int main() {
          */
         
         JUST_LOG_TRACE("UPDATE start\n");
+
+        SYSTEM_UPDATE_update_ui_elements(
+            &RES.global_ui_store,
+            delta_time
+        );
 
         SYSTEM_UPDATE_handle_edit_scene_ui(
             &RES.file_asset_server,
@@ -220,6 +235,11 @@ int main() {
         JUST_LOG_TRACE("FRAME_BOUNDARY end\n");
 
     }
+
+    // CLEANUP
+
+    RES_cleanup();
+    RENDER_RES_cleanup();
 
     return 0;
 }
