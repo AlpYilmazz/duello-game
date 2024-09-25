@@ -427,46 +427,73 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
         player_edit->player.update_timer.time_setup = slider_value;
     }
 
-    if (!save_button->elem.disabled && save_button->elem.state.just_clicked) {
-        for (uint32 state_i = 0; state_i < psc->state_count; state_i++) {
-            PlayerState* ps = &psc->states[state_i];
-            for (uint32 frame_i = 0; frame_i < ps->frame_count; frame_i++) {
-                for (uint32 coll_type_i = 0; coll_type_i < PLAYER_COLLIDER_TYPE_COUNT; coll_type_i++) {
-                    HitColliderSet* hcs = &ps->collider_sets[frame_i][coll_type_i];
-                    recalculate_bounding_box(hcs);
+    if (!save_button->elem.disabled) {
+        if (save_button->elem.state.pressed) {
+            save_button->draw_offset.y = 5;
+        }
+        else {
+            save_button->draw_offset.y = 0;
+        }
+
+        if (save_button->elem.state.just_clicked) {
+            for (uint32 state_i = 0; state_i < psc->state_count; state_i++) {
+                PlayerState* ps = &psc->states[state_i];
+                for (uint32 frame_i = 0; frame_i < ps->frame_count; frame_i++) {
+                    for (uint32 coll_type_i = 0; coll_type_i < PLAYER_COLLIDER_TYPE_COUNT; coll_type_i++) {
+                        HitColliderSet* hcs = &ps->collider_sets[frame_i][coll_type_i];
+                        recalculate_bounding_box(hcs);
+                    }
                 }
             }
+            save_hero(RES_file_asset_server, psc, player_edit->player.hero);
+
+            JUST_LOG_INFO("===========\n");
+            JUST_LOG_INFO("== SAVED ==\n");
+            info_log_player_state_collection(psc);
+            JUST_LOG_INFO("== SAVED ==\n");
+            JUST_LOG_INFO("===========\n");
         }
-        save_hero(RES_file_asset_server, psc, player_edit->player.hero);
-
-        JUST_LOG_INFO("===========\n");
-        JUST_LOG_INFO("== SAVED ==\n");
-        info_log_player_state_collection(psc);
-        JUST_LOG_INFO("== SAVED ==\n");
-        JUST_LOG_INFO("===========\n");
     }
 
-    if (!new_hitbox_button->elem.disabled && new_hitbox_button->elem.state.just_clicked) {
-        AABBCollider box = {
-            .x_left = -50,
-            .x_right = 50,
-            .y_top = 50,
-            .y_bottom = 150,
-        };
-        HitColliderSet* hcs = &player_state->collider_sets[player_state->current_frame][HITBOX];
-        hcs->colliders[hcs->count] = box;
-        hcs->count++;
+    if (!new_hitbox_button->elem.disabled) {
+        if (new_hitbox_button->elem.state.pressed) {
+            new_hitbox_button->draw_offset.y = 5;
+        }
+        else {
+            new_hitbox_button->draw_offset.y = 0;
+        }
+        
+        if (new_hitbox_button->elem.state.just_clicked) {
+            AABBCollider box = {
+                .x_left = -50,
+                .x_right = 50,
+                .y_top = 50,
+                .y_bottom = 150,
+            };
+            HitColliderSet* hcs = &player_state->collider_sets[player_state->current_frame][HITBOX];
+            hcs->colliders[hcs->count] = box;
+            hcs->count++;
+        }
     }
-    if (!new_hurtbox_button->elem.disabled && new_hurtbox_button->elem.state.just_clicked) {
-        AABBCollider box = {
-            .x_left = -50,
-            .x_right = 50,
-            .y_top = 50,
-            .y_bottom = 150,
-        };
-        HitColliderSet* hcs = &player_state->collider_sets[player_state->current_frame][HURTBOX];
-        hcs->colliders[hcs->count] = box;
-        hcs->count++;
+    if (!new_hurtbox_button->elem.disabled) {
+        if (new_hurtbox_button->elem.state.pressed) {
+            new_hurtbox_button->draw_offset.y = 5;
+        }
+        else {
+            new_hurtbox_button->draw_offset.y = 0;
+        }
+
+        if (new_hurtbox_button->elem.state.just_clicked) {
+            AABBCollider box = {
+                .x_left = -50,
+                .x_right = 50,
+                .y_top = 50,
+                .y_bottom = 150,
+            };
+            HitColliderSet* hcs = &player_state->collider_sets[player_state->current_frame][HURTBOX];
+            hcs->colliders[hcs->count] = box;
+            hcs->count++;
+        }
     }
 
     if (!delete_bin_area->elem.disabled
