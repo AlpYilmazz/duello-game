@@ -14,6 +14,7 @@ Resources RES = {
         .asset_folder = "assets"
     },
     // -- STRUCT_ZERO_INIT --
+    .camera_store = STRUCT_ZERO_INIT,
     .sprite_store = STRUCT_ZERO_INIT,
     // -- NULL --
     .threadpool = NULL,
@@ -22,7 +23,6 @@ Resources RES = {
     .texture_assets = LAZY_INIT,
     .texture_asset_events = LAZY_INIT,
     .global_ui_store = LAZY_INIT,
-    .primary_camera = LAZY_INIT,
     // .player = LAZY_INIT,
     .player_edit = LAZY_INIT,
     .edit_scene_ui = LAZY_INIT,
@@ -30,7 +30,7 @@ Resources RES = {
 
 RenderResources RENDER_RES = {
     // -- STRUCT_ZERO_INIT --
-    .render_sprites = STRUCT_ZERO_INIT,
+    .prepared_render_sprites = STRUCT_ZERO_INIT,
 };
 
 void RES_cleanup() {
@@ -62,12 +62,20 @@ int main() {
 
         RES.global_ui_store = ui_element_store_new_active();
 
-        RES.primary_camera = (Camera2D) {0};
-        RES.primary_camera.zoom = 1;
-        RES.primary_camera.offset = (Vector2) {
-            .x = RES.screen_size.width / 2.0,
-            .y = RES.screen_size.height / 2.0,
+        SpriteCamera primary_camera = {
+            .camera = {
+                .offset = {
+                    .x = RES.screen_size.width / 2.0,
+                    .y = RES.screen_size.height / 2.0,
+                },
+                .target = {0},
+                .rotation = 0,
+                .zoom = 1,
+            },
+            .layers = on_primary_layer(),
+            .sort_index = 0,
         };
+        set_primary_camera(&RES.camera_store, primary_camera);
     }
 
     transition_into_player_edit_chapter();

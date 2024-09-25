@@ -32,6 +32,8 @@ void transition_into_player_edit_chapter() {
 
         float32 delta_time = GetFrameTime();
 
+        SpriteCamera* primary_camera = get_primary_camera(&RES.camera_store);
+
         /**
          * PRE_UPDATE
          */
@@ -59,8 +61,7 @@ void transition_into_player_edit_chapter() {
             &RES.file_asset_server,
             &RES.global_ui_store,
             &RES.edit_scene_ui,
-            &RES.player_edit,
-            &RES.primary_camera
+            &RES.player_edit
         );
         SYSTEM_UPDATE_update_player(
             &RES.sprite_store,
@@ -70,7 +71,7 @@ void transition_into_player_edit_chapter() {
         SYSTEM_UPDATE_move_hitbox(
             &RES.sprite_store,
             &RES.player_edit,
-            &RES.primary_camera
+            primary_camera
         );
         
         JUST_LOG_TRACE("UPDATE end\n");
@@ -95,8 +96,9 @@ void transition_into_player_edit_chapter() {
         JUST_LOG_TRACE("EXTRACT_RENDER start\n");
 
         SYSTEM_EXTRACT_RENDER_cull_and_sort_sprites(
+            &RES.camera_store,
             &RES.sprite_store,
-            &RENDER_RES.render_sprites
+            &RENDER_RES.prepared_render_sprites
         );
         JUST_LOG_TRACE("SYSTEM_cull_and_sort_sprites end\n");
 
@@ -117,12 +119,14 @@ void transition_into_player_edit_chapter() {
         BeginDrawing();
             ClearBackground(DARKGRAY);
 
-            BeginMode2D(RES.primary_camera);
+            SYSTEM_RENDER_sorted_sprites(
+                &RES.texture_assets,
+                &RES.camera_store,
+                &RENDER_RES.prepared_render_sprites
+            );
 
-                SYSTEM_RENDER_sorted_sprites(
-                    &RES.texture_assets,
-                    &RENDER_RES.render_sprites
-                );
+            BeginMode2D(primary_camera->camera);
+
                 SYSTEM_RENDER_hitbox(
                     &RES.sprite_store,
                     &RES.player_edit.player

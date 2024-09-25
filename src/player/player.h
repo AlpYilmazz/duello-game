@@ -100,6 +100,7 @@ typedef struct {
     UIElementId save_button;
     UIElementId test_selection_box;
     UIElementId test_slider;
+    UIElementId test_panel;
 } EditSceneUI;
 
 EditSceneUI INIT_create_edit_scene_ui(
@@ -111,14 +112,13 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
     FileAssetServer* RES_file_asset_server,
     UIElementStore* RES_ui_store,
     EditSceneUI* edit_scene_ui,
-    PlayerEdit* player_edit,
-    Camera2D* primary_camera
+    PlayerEdit* player_edit
 );
 
 void SYSTEM_UPDATE_move_hitbox(
     SpriteStore* RES_sprite_store,
     PlayerEdit* player_edit,
-    Camera2D* primary_camera
+    SpriteCamera* primary_camera
 );
 
 // -------------------

@@ -151,8 +151,8 @@ Player spawn_player(
         .anchor = make_anchor(Anchor_Bottom_Mid),
         .position = { 0, 0 },
         .use_source_size = true,
-        // .size = { 93*4, 112*4 }, // TODO: definitally handle size based on sprite
-        .scale = {4, 4},
+        // .size = { 93*4, 112*4 },
+        .scale = Vector2_From(4),
         .rotation = 0,
         .rway = Rotation_CCW,
     };
@@ -160,8 +160,12 @@ Player spawn_player(
     Sprite sprite = {
         .texture = player_state_collection.states[player_state_collection.active_state].anim_sheet,// player_state.anim_sheets[player_state.active],
         .tint = WHITE,
-        .source = get_current_frame_source(&player_state_collection), // RECTANGLE_NICHE, // (Rectangle) {0, 0, 32, 32},
+        .use_custom_source = true,
+        .source = get_current_frame_source(&player_state_collection),
         .z_index = 10,
+        //
+        .use_layer_system = true,
+        .layers = on_single_layer(1),
         .visible = true,
         .camera_visible = true,
     };
@@ -347,13 +351,34 @@ EditSceneUI INIT_create_edit_scene_ui(
         .cursor = 0.5,
     };
 
-    UIElementId new_hitbox_button_id = put_ui_element_button(RES_ui_store, new_hitbox_button);
-    UIElementId new_hurtbox_button_id = put_ui_element_button(RES_ui_store, new_hurtbox_button);
-    UIElementId delete_bin_area_id = put_ui_element_area(RES_ui_store, delete_bin_area);
-    UIElementId save_button_id = put_ui_element_button(RES_ui_store, save_button);
+    Panel test_panel = {
+        .elem = {
+            .id = 0,
+            .type = UIElementType_Panel,
+            .state = {0},
+            .anchor = make_anchor(Anchor_Top_Left),
+            .position = {0, 0},
+            .size = {RES_screen_size.width, RES_screen_size.height},
+            .disabled = false,
+        },
+        .store = ui_element_store_new_active(),
+        .open = true,
+    };
 
-    UIElementId test_selection_box_id = put_ui_element_selection_box(RES_ui_store, test_selection_box);
-    UIElementId test_slider_id = put_ui_element_slider(RES_ui_store, test_slider);
+    // UIElementStore* ui_store = RES_ui_store;
+    // UIElementStore* ui_store = &test_panel.store;
+    UIElementId test_panel_id = put_ui_element_panel(RES_ui_store, test_panel);
+    JUST_LOG_DEBUG("GLOBAL STORE count: %d\n", RES_ui_store->count);
+    Panel* panel = get_ui_element_unchecked(RES_ui_store, test_panel_id);
+    UIElementStore* ui_store = &panel->store;
+
+    UIElementId new_hitbox_button_id = put_ui_element_button(ui_store, new_hitbox_button);
+    UIElementId new_hurtbox_button_id = put_ui_element_button(ui_store, new_hurtbox_button);
+    UIElementId delete_bin_area_id = put_ui_element_area(ui_store, delete_bin_area);
+    UIElementId save_button_id = put_ui_element_button(ui_store, save_button);
+
+    UIElementId test_selection_box_id = put_ui_element_selection_box(ui_store, test_selection_box);
+    UIElementId test_slider_id = put_ui_element_slider(ui_store, test_slider);
 
     EditSceneUI ui = {
         .new_hitbox_button = new_hitbox_button_id,
@@ -362,6 +387,7 @@ EditSceneUI INIT_create_edit_scene_ui(
         .save_button = save_button_id,
         .test_selection_box = test_selection_box_id,
         .test_slider = test_slider_id,
+        .test_panel = test_panel_id,
     };
 
     return ui;
@@ -371,16 +397,21 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
     FileAssetServer* RES_file_asset_server,
     UIElementStore* RES_ui_store,
     EditSceneUI* edit_scene_ui,
-    PlayerEdit* player_edit,
-    Camera2D* primary_camera
+    PlayerEdit* player_edit
 ) {
-    Button* new_hitbox_button = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->new_hitbox_button);
-    Button* new_hurtbox_button = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->new_hurtbox_button);
-    Area* delete_bin_area = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->delete_bin_area);
-    Button* save_button = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->save_button);
+    // UIElementStore* ui_store = RES_ui_store;
+    Panel* test_panel = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->test_panel);
+    UIElementStore* ui_store = &test_panel->store;
+    // JUST_LOG_DEBUG("Panel store count: %d\n", ui_store->count);
+    // JUST_LOG_DEBUG("mem: %d\n", ui_store->memory.cursor - ui_store->memory.base);
 
-    SelectionBox* test_selection_box = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->test_selection_box);
-    Slider* test_slider = get_ui_element_unchecked(RES_ui_store, edit_scene_ui->test_slider);
+    Button* new_hitbox_button = get_ui_element_unchecked(ui_store, edit_scene_ui->new_hitbox_button);
+    Button* new_hurtbox_button = get_ui_element_unchecked(ui_store, edit_scene_ui->new_hurtbox_button);
+    Area* delete_bin_area = get_ui_element_unchecked(ui_store, edit_scene_ui->delete_bin_area);
+    Button* save_button = get_ui_element_unchecked(ui_store, edit_scene_ui->save_button);
+
+    SelectionBox* test_selection_box = get_ui_element_unchecked(ui_store, edit_scene_ui->test_selection_box);
+    Slider* test_slider = get_ui_element_unchecked(ui_store, edit_scene_ui->test_slider);
 
     PlayerStateCollection* psc = &player_edit->player.state_collection;
     PlayerState* player_state = get_active_player_state(psc);
@@ -392,7 +423,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
 
     if (!test_slider->elem.disabled && test_slider->elem.state.pressed) {
         float32 slider_value = get_slider_value(test_slider);
-        JUST_LOG_INFO("Slider value: %0.2f\n", slider_value);
+        JUST_LOG_TRACE("Slider value: %0.2f\n", slider_value);
         player_edit->player.update_timer.time_setup = slider_value;
     }
 
@@ -453,7 +484,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
 void SYSTEM_UPDATE_move_hitbox(
     SpriteStore* RES_sprite_store,
     PlayerEdit* player_edit,
-    Camera2D* primary_camera
+    SpriteCamera* primary_camera
 ) {
     if (!player_edit->player.paused) {
         return;
@@ -465,7 +496,7 @@ void SYSTEM_UPDATE_move_hitbox(
     SpriteTransform* player_transform = &RES_sprite_store->transforms[player->sprite_component.id];
     Vector2 player_position = player_transform->position;
 
-    Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), *primary_camera);
+    Vector2 mouse = GetScreenToWorld2D(GetMousePosition(), primary_camera->camera);
     Vector2 relative_mouse = Vector2Subtract(mouse, player_position);
 
     const float32 MARGIN = 4;

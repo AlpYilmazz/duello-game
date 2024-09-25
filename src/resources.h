@@ -12,15 +12,15 @@ typedef struct {
     TextureAssets texture_assets;
     Events_TextureAssetEvent texture_asset_events;
     //
+    SpriteCameraStore camera_store;
     SpriteStore sprite_store;
     UIElementStore global_ui_store;
     //
-    Camera2D primary_camera;
     // Player player;
     PlayerEdit player_edit;
     EditSceneUI edit_scene_ui;
 } Resources;
 
 typedef struct {
-    SortedRenderSprites render_sprites;
+    PreparedRenderSprites prepared_render_sprites;
 } RenderResources;
