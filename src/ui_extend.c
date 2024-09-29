@@ -30,22 +30,6 @@ void ui_draw_binary_box(BinaryBox* bbox) {
 void ui_handle_binary_box(UIElement* elem, UIEvent event, UIEventContext context) {
     BinaryBox* bbox = (void*)elem;
     switch (event) {
-    case UIEvent_BeginHover:
-        bbox->elem.state.hover = true;
-        break;
-    case UIEvent_EndHover:
-        bbox->elem.state.hover = false;
-        break;
-    case UIEvent_Pressed:
-        bbox->elem.state.pressed = true;
-        break;
-    case UIEvent_Released:
-        if (bbox->elem.state.hover && bbox->elem.state.pressed) {
-            bbox->selected ^= 1;
-            bbox->elem.state.just_clicked = true;
-            bbox->elem.state.click_point_relative = context.mouse;
-        }
-        break;
     case UIEvent_Draw:
         ui_draw_binary_box(bbox);
         break;

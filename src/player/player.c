@@ -365,12 +365,80 @@ EditSceneUI INIT_create_edit_scene_ui(
         .open = true,
     };
 
+    ChoiceList test_choice_list = {
+        .elem = {
+            .id = 0,
+            .type = UIElementType_ChoiceList,
+            .state = {0},
+            .anchor = make_anchor(Anchor_Top_Left),
+            .position = {150, 150 + 100 + 200},
+            .size = {250, 250},
+            .disabled = false,
+        },
+        .style = {
+            .rows = 2,
+            .cols = 2,
+            .option_size = {100, 100},
+            .option_margin = 10,
+            //
+            .selected_color = GREEN,
+            .unselected_color = RED,
+            .disabled_color = DARKGRAY,
+            //
+            .is_bordered = false,
+            // .border_thick = 2,
+            // .border_color = {0, 0, 255, 255},
+            //
+            .title_font = GetFontDefault(),
+            .title_font_size = 15,
+            .title_spacing = 2,
+            .title_color = WHITE,
+        },
+        .option_count = 3,
+        .options = {
+            {
+                .id = HERO_SAMURAI,
+                .title = "SAMURAI",
+            },
+            {
+                .id = HERO_KNIGHT,
+                .title = "KNIGHT",
+            },
+            {
+                .id = HERO_XXX,
+                .title = "XXX",
+            },
+        }
+    };
+
+    Button test_overlap_button = new_hitbox_button;
+    test_overlap_button.elem = (UIElement) {
+        .id = 0,
+        .type = UIElementType_Button,
+        .state = {0},
+        .layer = 10,
+        .anchor = make_anchor(Anchor_Top_Left),
+        .position = {150 + 30, 150},
+        .size = {100, 100},
+        .disabled = false,
+    };
+    test_overlap_button.style.idle_color = MAGENTA;
+    test_overlap_button.style.border_color = BLACK;
+    test_overlap_button.title[0] = 'T';
+    test_overlap_button.title[1] = 'E';
+    test_overlap_button.title[2] = 'S';
+    test_overlap_button.title[3] = 'T';
+    test_overlap_button.title[4] = '\0';
+
+    new_hurtbox_button.elem.layer = 20;
+
     // UIElementStore* ui_store = RES_ui_store;
-    // UIElementStore* ui_store = &test_panel.store;
-    UIElementId test_panel_id = put_ui_element_panel(RES_ui_store, test_panel);
-    JUST_LOG_DEBUG("GLOBAL STORE count: %d\n", RES_ui_store->count);
-    Panel* panel = get_ui_element_unchecked(RES_ui_store, test_panel_id);
-    UIElementStore* ui_store = &panel->store;
+    UIElementStore* ui_store = &test_panel.store;
+
+    // UIElementId test_panel_id = put_ui_element_panel(RES_ui_store, test_panel);
+    // JUST_LOG_DEBUG("GLOBAL STORE count: %d\n", RES_ui_store->count);
+    // Panel* panel = get_ui_element_unchecked(RES_ui_store, test_panel_id);
+    // UIElementStore* ui_store = &panel->store;
 
     UIElementId new_hitbox_button_id = put_ui_element_button(ui_store, new_hitbox_button);
     UIElementId new_hurtbox_button_id = put_ui_element_button(ui_store, new_hurtbox_button);
@@ -380,6 +448,12 @@ EditSceneUI INIT_create_edit_scene_ui(
     UIElementId test_selection_box_id = put_ui_element_selection_box(ui_store, test_selection_box);
     UIElementId test_slider_id = put_ui_element_slider(ui_store, test_slider);
 
+    UIElementId test_choice_list_id = put_ui_element_choice_list(ui_store, test_choice_list);
+
+    UIElementId test_overlap_button_id = put_ui_element_button(ui_store, test_overlap_button);
+
+    UIElementId test_panel_id = put_ui_element_panel(RES_ui_store, test_panel);
+
     EditSceneUI ui = {
         .new_hitbox_button = new_hitbox_button_id,
         .new_hurtbox_button = new_hurtbox_button_id,
@@ -387,6 +461,8 @@ EditSceneUI INIT_create_edit_scene_ui(
         .save_button = save_button_id,
         .test_selection_box = test_selection_box_id,
         .test_slider = test_slider_id,
+        .test_choice_list = test_choice_list_id,
+        .test_overlap_button = test_overlap_button_id,
         .test_panel = test_panel_id,
     };
 
@@ -412,6 +488,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
 
     SelectionBox* test_selection_box = get_ui_element_unchecked(ui_store, edit_scene_ui->test_selection_box);
     Slider* test_slider = get_ui_element_unchecked(ui_store, edit_scene_ui->test_slider);
+    Button* test_overlap_button = get_ui_element_unchecked(ui_store, edit_scene_ui->test_overlap_button);
 
     PlayerStateCollection* psc = &player_edit->player.state_collection;
     PlayerState* player_state = get_active_player_state(psc);
@@ -421,14 +498,27 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
     new_hitbox_button->elem.disabled = !player_edit->player.paused;
     new_hurtbox_button->elem.disabled = !player_edit->player.paused;
 
-    if (!test_slider->elem.disabled && test_slider->elem.state.pressed) {
+    if (!test_slider->elem.disabled && test_slider->elem.state.on_press) {
         float32 slider_value = get_slider_value(test_slider);
         JUST_LOG_TRACE("Slider value: %0.2f\n", slider_value);
         player_edit->player.update_timer.time_setup = slider_value;
     }
 
+    if (!test_overlap_button->elem.disabled) {
+        if (test_overlap_button->elem.state.on_press) {
+            test_overlap_button->draw_offset.y = 5;
+        }
+        else {
+            test_overlap_button->draw_offset.y = 0;
+        }
+
+        if (test_overlap_button->elem.state.just_clicked) {
+            printf("Test Button Was Pressed\n");
+        }
+    }
+
     if (!save_button->elem.disabled) {
-        if (save_button->elem.state.pressed) {
+        if (save_button->elem.state.on_press) {
             save_button->draw_offset.y = 5;
         }
         else {
@@ -456,7 +546,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
     }
 
     if (!new_hitbox_button->elem.disabled) {
-        if (new_hitbox_button->elem.state.pressed) {
+        if (new_hitbox_button->elem.state.on_press) {
             new_hitbox_button->draw_offset.y = 5;
         }
         else {
@@ -476,7 +566,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
         }
     }
     if (!new_hurtbox_button->elem.disabled) {
-        if (new_hurtbox_button->elem.state.pressed) {
+        if (new_hurtbox_button->elem.state.on_press) {
             new_hurtbox_button->draw_offset.y = 5;
         }
         else {
@@ -500,7 +590,7 @@ void SYSTEM_UPDATE_handle_edit_scene_ui(
         && player_edit->editing
         && player_edit->edit_type == ColliderEditType_Move
         && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)
-        && delete_bin_area->elem.state.hover
+        && delete_bin_area->elem.state.on_hover
     ) {
         HitColliderSet* hcs = &player_state->collider_sets[player_state->current_frame][player_edit->edit_collider_type];
         hcs->colliders[player_edit->edit_collider_index] = hcs->colliders[hcs->count - 1];

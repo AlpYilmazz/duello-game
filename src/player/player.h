@@ -100,6 +100,8 @@ typedef struct {
     UIElementId save_button;
     UIElementId test_selection_box;
     UIElementId test_slider;
+    UIElementId test_choice_list;
+    UIElementId test_overlap_button;
     UIElementId test_panel;
 } EditSceneUI;
 
