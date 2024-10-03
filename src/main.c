@@ -46,7 +46,7 @@ void RENDER_RES_cleanup() {
 int main() {
     ui_extention_register_ui_vtable();
 
-    SET_LOG_LEVEL(LOG_LEVEL_WARN);
+    SET_LOG_LEVEL(LOG_LEVEL_INFO);
 
     InitWindow(RES.screen_size.width, RES.screen_size.height, "Duello Game");
     SetTargetFPS(60);

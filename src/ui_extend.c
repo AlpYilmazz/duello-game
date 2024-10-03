@@ -8,7 +8,7 @@
 // BinaryBox
 
 UIElementId put_ui_element_binary_box(UIElementStore* store, BinaryBox bbox) {
-    return put_ui_element(store, (void*)&bbox, sizeof(BinaryBox));
+    return put_ui_element(store, (void*)&bbox, layoutof(BinaryBox));
 }
 
 void ui_draw_binary_box(BinaryBox* bbox) {

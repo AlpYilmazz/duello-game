@@ -372,14 +372,14 @@ EditSceneUI INIT_create_edit_scene_ui(
             .state = {0},
             .anchor = make_anchor(Anchor_Top_Left),
             .position = {150, 150 + 100 + 200},
-            .size = {250, 250},
+            .size = {250*2, 250},
             .disabled = false,
         },
         .style = {
-            .rows = 2,
-            .cols = 2,
-            .option_size = {100, 100},
-            .option_margin = 10,
+            // .rows = 2,
+            // .cols = 2,
+            // .option_size = {100, 100},
+            // .option_margin = 10,
             //
             .selected_color = GREEN,
             .unselected_color = RED,
@@ -394,6 +394,19 @@ EditSceneUI INIT_create_edit_scene_ui(
             .title_spacing = 2,
             .title_color = WHITE,
         },
+        .layout = grid_layout((GridLayoutBegin) {
+            .box = {
+                .x = 150,
+                .y = 150 + 100 + 200,
+                .width = 250*2,
+                .height = 250,
+            },
+            .box_padding = 20,
+            .cell_padding = 10,
+            .major = Grid_RowMajor,
+            .rows = 1,
+            .cols = 3,
+        }),
         .option_count = 3,
         .options = {
             {
