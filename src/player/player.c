@@ -195,218 +195,148 @@ EditSceneUI INIT_create_edit_scene_ui(
     URectSize RES_screen_size,
     UIElementStore* RES_ui_store
 ) {
-    Button new_hitbox_button = {
+    UITextStyle default_ui_elem_title_style = {
+        .font = GetFontDefault(),
+        .font_size = 15,
+        .spacing = 2,
+        .color = WHITE,
+    };
+
+    Button new_hitbox_button = make_ui_button((Button) {
         .elem = {
-            .id = 0,
-            .type = UIElementType_Button,
-            .state = {0},
             .anchor = make_anchor(Anchor_Center),
             .position = {150, 150},
             .size = {100, 50},
-            .disabled = false,
         },
         .style = {
             .idle_color = RED,
             .hovered_color = MAROON,
             .pressed_color = YELLOW,
             .disabled_color = BLACK,
-            //
-            .is_bordered = true,
-            .border_thick = 2,
-            .border_color = {255, 0, 0, 255},
-            //
-            .title_font = GetFontDefault(),
-            .title_font_size = 15,
-            .title_spacing = 2,
-            .title_color = WHITE,
+            .border = {
+                .is_bordered = true,
+                .thick = 2,
+                .color = {255, 0, 0, 255},
+            },
+            .title = default_ui_elem_title_style,
         },
         .title = "HITBOX",
-    };
+    });
 
-    Button new_hurtbox_button = {
+    Button new_hurtbox_button = make_ui_button((Button) {
         .elem = {
-            .id = 0,
-            .type = UIElementType_Button,
-            .state = {0},
             .anchor = make_anchor(Anchor_Center),
             .position = {150, 150 + 100},
             .size = {100, 50},
-            .disabled = false,
         },
         .style = {
             .idle_color = GREEN,
             .hovered_color = LIME,
             .pressed_color = YELLOW,
             .disabled_color = BLACK,
-            //
-            .is_bordered = true,
-            .border_thick = 2,
-            .border_color = {0, 255, 0, 255},
-            //
-            .title_font = GetFontDefault(),
-            .title_font_size = 15,
-            .title_spacing = 2,
-            .title_color = WHITE,
+            .border = {
+                .is_bordered = true,
+                .thick = 2,
+                .color = {0, 255, 0, 255},
+            },
+            .title = default_ui_elem_title_style,
         },
         .title = "HURTBOX",
-    };
+    });
 
-    Button save_button = {
+    Button save_button = make_ui_button((Button) {
         .elem = {
-            .id = 0,
-            .type = UIElementType_Button,
-            .state = {0},
             .anchor = make_anchor(Anchor_Center),
             .position = {150, (float32)RES_screen_size.height - 150.0 - 50/2.0},
             .size = {100, 50},
-            .disabled = false,
         },
         .style = {
             .idle_color = BLUE,
             .hovered_color = DARKBLUE,
             .pressed_color = YELLOW,
             .disabled_color = BLACK,
-            //
-            .is_bordered = true,
-            .border_thick = 2,
-            .border_color = {0, 0, 255, 255},
-            //
-            .title_font = GetFontDefault(),
-            .title_font_size = 15,
-            .title_spacing = 2,
-            .title_color = WHITE,
+            .border = {
+                .is_bordered = true,
+                .thick = 2,
+                .color = {0, 0, 255, 255},
+            },
+            .title = default_ui_elem_title_style,
         },
         .title = "SAVE",
-    };
+    });
 
-    Area delete_bin_area = {
+    Area delete_bin_area = make_ui_area((Area) {
         .elem = {
-            .id = 0,
-            .type = UIElementType_Area,
-            .state = {0},
             .anchor = make_anchor(Anchor_Bottom_Right),
             .position = { RES_screen_size.width, RES_screen_size.height },
             .size = {200, 200},
-            .disabled = false,
         },
         .style = {
             .idle_color = {230, 41, 55, 50},
             .hovered_color = {230, 41, 55, 150},
-            .is_bordered = true,
-            .border_thick = 2,
-            .border_color = {255, 0, 0, 150},
+            .border = {
+                .is_bordered = true,
+                .thick = 2,
+                .color = {255, 0, 0, 150},
+            },
         },
-    };
+    });
 
-    SelectionBox test_selection_box = {
+    SelectionBox test_selection_box = make_ui_selection_box((SelectionBox) {
         .elem = {
-            .id = 0,
-            .type = UIElementType_SelectionBox,
-            .state = {0},
             .anchor = make_anchor(Anchor_Bottom_Mid),
             .position = {RES_screen_size.width/2.0, (float32)RES_screen_size.height - 150.0 - 50/2.0},
             .size = {100, 100},
-            .disabled = false,
         },
         .style = {
             .selected_color = GREEN,
             .unselected_color = RED,
             .disabled_color = DARKGRAY,
-            //
-            .is_bordered = false,
-            // .border_thick = 2,
-            // .border_color = {0, 0, 255, 255},
-            //
-            .title_font = GetFontDefault(),
-            .title_font_size = 15,
-            .title_spacing = 2,
-            .title_color = WHITE,
+            // .border = {0},
+            .title = default_ui_elem_title_style,
         },
         .title = "PLAY",
         .selected = false,
-    };
+    });
 
-    Slider test_slider = {
+    Slider test_slider = make_ui_slider((Slider) {
         .elem = {
-            .id = 0,
-            .type = UIElementType_Slider,
-            .state = {0},
             .anchor = make_anchor(Anchor_Bottom_Mid),
             .position = {RES_screen_size.width/2.0, (float32)RES_screen_size.height - 30 - 100/2.0},
             .size = {500, 20},
-            .disabled = false,
         },
         .style = {
             .line_color = { 100, 100, 100, 50 },
             .cursor_color = YELLOW,
-            //
-            .title_font = GetFontDefault(),
-            .title_font_size = 15,
-            .title_spacing = 2,
-            .title_color = WHITE,
+            .title = default_ui_elem_title_style,
         },
         .title = "UPDATE RATE",
         .low_value = 0.0,
         .high_value = 1.0,
         .cursor = 0.5,
-    };
+    });
 
-    Panel test_panel = {
+    ChoiceList test_choice_list = make_ui_choice_list((ChoiceList) {
         .elem = {
-            .id = 0,
-            .type = UIElementType_Panel,
-            .state = {0},
-            .anchor = make_anchor(Anchor_Top_Left),
-            .position = {0, 0},
-            .size = {RES_screen_size.width, RES_screen_size.height},
-            .disabled = false,
-        },
-        .store = ui_element_store_new_active(),
-        .open = true,
-    };
-
-    ChoiceList test_choice_list = {
-        .elem = {
-            .id = 0,
-            .type = UIElementType_ChoiceList,
-            .state = {0},
             .anchor = make_anchor(Anchor_Top_Left),
             .position = {150, 150 + 100 + 200},
             .size = {250*2, 250},
-            .disabled = false,
         },
         .style = {
-            // .rows = 2,
-            // .cols = 2,
-            // .option_size = {100, 100},
-            // .option_margin = 10,
-            //
             .selected_color = GREEN,
             .unselected_color = RED,
             .disabled_color = DARKGRAY,
-            //
-            .is_bordered = false,
-            // .border_thick = 2,
-            // .border_color = {0, 0, 255, 255},
-            //
-            .title_font = GetFontDefault(),
-            .title_font_size = 15,
-            .title_spacing = 2,
-            .title_color = WHITE,
+            // .border = {0},
+            .title = default_ui_elem_title_style,
         },
-        .layout = grid_layout((GridLayoutBegin) {
-            .box = {
-                .x = 150,
-                .y = 150 + 100 + 200,
-                .width = 250*2,
-                .height = 250,
-            },
+        .layout = {
+            // .box = {0},
             .box_padding = 20,
             .cell_padding = 10,
             .major = Grid_RowMajor,
-            .rows = 1,
+            .rows = 3,
             .cols = 3,
-        }),
+        },
         .option_count = 3,
         .options = {
             {
@@ -422,26 +352,39 @@ EditSceneUI INIT_create_edit_scene_ui(
                 .title = "XXX",
             },
         }
-    };
+    });
+    JUST_LOG_INFO(
+        "choice list: %d, {%0.0f, %0.0f, %0.0f, %0.0f}, [%d, %d, %d]\n",
+        test_choice_list.option_count,
+        test_choice_list.layout.box.x, test_choice_list.layout.box.y, test_choice_list.layout.box.width, test_choice_list.layout.box.height,
+        test_choice_list.options[0].id, test_choice_list.options[1].id, test_choice_list.options[2].id
+    );
+
+    Panel test_panel = make_ui_panel((Panel) {
+        .elem = {
+            .anchor = make_anchor(Anchor_Top_Left),
+            .position = {0, 0},
+            .size = {RES_screen_size.width, RES_screen_size.height},
+        },
+        .store = ui_element_store_new_active(),
+        .open = true,
+    });
 
     Button test_overlap_button = new_hitbox_button;
     test_overlap_button.elem = (UIElement) {
-        .id = 0,
-        .type = UIElementType_Button,
-        .state = {0},
         .layer = 10,
         .anchor = make_anchor(Anchor_Top_Left),
         .position = {150 + 30, 150},
         .size = {100, 100},
-        .disabled = false,
     };
     test_overlap_button.style.idle_color = MAGENTA;
-    test_overlap_button.style.border_color = BLACK;
+    test_overlap_button.style.border.color = BLACK;
     test_overlap_button.title[0] = 'T';
     test_overlap_button.title[1] = 'E';
     test_overlap_button.title[2] = 'S';
     test_overlap_button.title[3] = 'T';
     test_overlap_button.title[4] = '\0';
+    test_overlap_button = make_ui_button(test_overlap_button);
 
     new_hurtbox_button.elem.layer = 20;
 
